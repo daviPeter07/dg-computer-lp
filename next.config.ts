@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const erpImageHost = process.env.ERP_IMAGE_HOST;
+
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
@@ -7,6 +9,10 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   partialPrefetching: true,
+  images: {
+    qualities: [75, 90],
+    remotePatterns: erpImageHost ? [{ protocol: "https", hostname: erpImageHost }] : [],
+  },
   turbopack: {
     rules: {
       "*.css": {

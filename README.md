@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DG Computer — site institucional e loja (vitrine)
 
-## Getting Started
-
-First, run the development server:
+Next.js 16 (App Router, Cache Components) + Tailwind 4 + shadcn/ui (Base UI), Magic UI e React Bits.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev        # http://localhost:3000
+pnpm build && pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Páginas
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Rota | Conteúdo |
+| --- | --- |
+| `/` | Início: serviços, manutenção, destaques do estoque, diferenciais |
+| `/sobre` | Quem somos, áreas de atuação, diferenciais, portfólio de sites |
+| `/historia` | Linha do tempo e montagens de PC Gamer |
+| `/produtos` | Produtos do ERP agrupados por categoria |
+| `/loja` e `/loja/[slug]` | Loja **somente para consulta** (busca, filtros, detalhe). Sem carrinho nem pagamento; a compra é pelo WhatsApp |
+| `/faq` | Perguntas frequentes |
+| `/contato` | Canais, mapa e formulário que abre o WhatsApp com a mensagem pronta |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Integração com o ERP de estoque
 
-## Learn More
+Toda a leitura de produtos passa por `src/lib/erp/client.ts`.
 
-To learn more about Next.js, take a look at the following resources:
+- Sem `ERP_API_URL`, o site usa os dados de demonstração de `src/lib/erp/demo.ts` e mostra o aviso "Dados de demonstração".
+- Com `ERP_API_URL`, faz `GET {ERP_API_URL}/produtos?ativos=true` (com `Authorization: Bearer ERP_API_TOKEN`, se definido). Ajuste a interface `ProdutoErp` e a função `mapearProduto` aos campos reais do ERP, e o mapa `gruposParaCategoria` aos grupos cadastrados nele.
+- O catálogo fica em cache (`cacheLife("minutes")`, tag `erp-catalogo`). Para atualizar na hora quando o estoque mudar, configure o ERP para chamar:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+  ```bash
+  curl -X POST https://SEU-DOMINIO/api/estoque/revalidar -H "x-webhook-secret: $ERP_WEBHOOK_SECRET"
+  ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Fotos hospedadas pelo ERP: defina `ERP_IMAGE_HOST` para liberar o domínio no `next/image`.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Veja `.env.example`.
